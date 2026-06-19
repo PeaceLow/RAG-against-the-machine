@@ -43,7 +43,6 @@ class BM25Retriever(BaseRetriever):
 
     def __init__(self) -> None:
         """Initialize the BM25 Retriever with optimized parameters for code."""
-        # We lower 'b' from 0.75 to 0.4 to reduce the penalty for long code chunks
         self.retriever = bm25s.BM25(k1=1.5, b=0.75)
         self.chunks: List[Chunk] = []
 

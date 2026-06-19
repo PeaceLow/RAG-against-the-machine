@@ -54,7 +54,7 @@ uv run python -m src.main index --repo_path vllm-0.10.1
 uv run python -m src.main answer "How to configure OpenAI server?" --k 5
 
 # Evaluate the retriever against ground truth
-uv run python -m src.main evaluate --dataset_path data/datasets/AnsweredQuestions/dataset_docs_public.json --k 10
+uv run python -m src.main evaluate --dataset_path datasets_public/public/AnsweredQuestions/dataset_docs_public.json --k 10
 ```
 
 ## Resources
