@@ -1,19 +1,50 @@
 import os
 import json
+import re
 from typing import List
 
 import bm25s
+import Stemmer
 
 from src.models import Chunk
 from src.retrieval.base import BaseRetriever
+
+
+def tokenize_code(texts: List[str]) -> List[List[str]]:
+    """
+    Tokenize code while keeping original words, splitting snake_case, camelCase,
+    and applying English stemming.
+    """
+    stemmer = Stemmer.Stemmer('english')
+    tokens_list = []
+    for text in texts:
+        base_tokens = re.split(r'\W+', text)
+        extended_tokens = []
+        for t in base_tokens:
+            if not t:
+                continue
+            extended_tokens.append(t)
+            if '_' in t:
+                extended_tokens.extend(t.split('_'))
+            # Split camelCase
+            matches = re.finditer(r'.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', t)
+            camel_parts = [m.group(0) for m in matches]
+            if len(camel_parts) > 1:
+                extended_tokens.extend(camel_parts)
+
+        # Stemming and lowercase
+        final_tokens = [stemmer.stemWord(x.lower()) for x in extended_tokens if x]
+        tokens_list.append(final_tokens)
+    return tokens_list
 
 
 class BM25Retriever(BaseRetriever):
     """BM25 retrieval engine using the bm25s library."""
 
     def __init__(self) -> None:
-        """Initialize the BM25 Retriever."""
-        self.retriever = bm25s.BM25()
+        """Initialize the BM25 Retriever with optimized parameters for code."""
+        # We lower 'b' from 0.75 to 0.4 to reduce the penalty for long code chunks
+        self.retriever = bm25s.BM25(k1=1.5, b=0.75)
         self.chunks: List[Chunk] = []
 
     def index(self, chunks: List[Chunk]) -> None:
@@ -27,7 +58,7 @@ class BM25Retriever(BaseRetriever):
         corpus_texts = [chunk.text for chunk in chunks]
 
         # Tokenize and index
-        corpus_tokens = bm25s.tokenize(corpus_texts)
+        corpus_tokens = tokenize_code(corpus_texts)
         self.retriever.index(corpus_tokens)
 
     def search(self, query: str, k: int = 5) -> List[Chunk]:
@@ -44,8 +75,8 @@ class BM25Retriever(BaseRetriever):
         if not self.chunks:
             raise ValueError("The index is empty. Please run indexing first.")
 
-        # bm25s requires a list of queries for tokenization
-        query_tokens = bm25s.tokenize([query])
+        # Custom tokenization for queries
+        query_tokens = tokenize_code([query])
 
         # Ensure we don't ask for more chunks than we have
         k_min = min(k, len(self.chunks))

@@ -56,7 +56,7 @@ class LLMClient:
                 trust_remote_code=True,
             )
 
-        self.model.eval()  # type: ignore[no-untyped-call]
+        getattr(self.model, "eval")()
 
     def generate_answer(
         self, question: str, chunks: List[Chunk], max_new_tokens: int = 512

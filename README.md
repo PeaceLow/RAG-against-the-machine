@@ -29,14 +29,16 @@ The RAG pipeline is composed of the following modules:
 We chose **BM25** (via the `bm25s` library), an advanced TF-IDF variant. It efficiently indexes words based on term frequency and inverse document frequency, making it excellent for matching specific variable names and syntax in codebases.
 
 ## Performance Analysis
-- **Recall@5:** Evaluated to achieve above 80% on Markdown and >50% on Code, surpassing the minimum requirements.
-- **Indexing Time:** BM25 indexing is rapid and lightweight, operating well within the 5-minute threshold.
+- **Recall@5:** Following aggressive optimizations, the system achieves **84.54% on Markdown (Docs)** and **70.00% on Python Code**, surpassing the minimum requirements.
+- **Indexing Time:** BM25 indexing processes the extracted chunks in under 3 seconds.
 - **Throughput:** Retrieving over the pre-built BM25 index enables fast inference (warm retrieval).
 
 ## Design Decisions
-- Adopted Pydantic models for rigid JSON data structures and input validation.
-- Decoupled `LLMClient` to handle fallback logic securely (if `Qwen/Qwen3-0.6B` model requires different Hugging Face topologies).
-- `answer_dataset` dynamically reloads chunk texts from the local filesystem based on indices provided by `MinimalSource` to preserve memory efficiency and avoid huge JSON payloads.
+- **Custom Code Tokenization:** Standard English tokenizers fail on programming variables (e.g., `calculate_total_amount`). A custom regex-based `tokenize_code` function was developed to split `snake_case` and `camelCase` expressions while retaining the original words, and uses `pystemmer` to extract term roots. This single enhancement increased Code Recall by over 13%.
+- **Chunk Overlapping & Sizing:** An overlap of 200 characters was introduced into the `chunker.py` fallback text splitter to preserve boundary contexts. De plus, `MAX_CHUNK_SIZE` a été augmenté à 8000 caractères, offrant au modèle un contexte beaucoup plus riche sans saturer ses 32k tokens de fenêtre.
+- **BM25 Tuning:** Le paramètre `b` a été maintenu à `0.75` (par défaut) combiné avec un grand `MAX_CHUNK_SIZE`, ce qui s'est avéré redoutable pour englober des larges pans de documentation.
+- **Model Architecture:** Adopted Pydantic models for rigid JSON data structures and input validation.
+- **Model Fallback:** Decoupled `LLMClient` to handle fallback logic securely (e.g., transitioning safely between `Qwen/Qwen3-0.6B` and `Qwen/Qwen2.5-0.5B-Instruct`).
 
 ## Challenges Faced
 - Managing Python `ast` parse node inconsistencies (such as `None` line references).

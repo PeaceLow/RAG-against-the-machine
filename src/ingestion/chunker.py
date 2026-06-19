@@ -115,6 +115,7 @@ def chunk_text_by_size(
     start_limit: int,
     end_limit: int,
     max_chunk_size: int,
+    overlap: int = 200,
 ) -> List[Chunk]:
     """Découpe un texte précis en morceaux d'une taille limite exacte."""
     chunks = []
@@ -131,7 +132,9 @@ def chunk_text_by_size(
                     text=chunk_text,
                 )
             )
-        current_idx = next_idx
+        if next_idx == end_limit:
+            break
+        current_idx = max(current_idx + 1, next_idx - overlap)
     return chunks
 
 
@@ -167,6 +170,7 @@ def chunk_markdown(
 
     current_start = 0
     current_end = 0
+    blocks_in_chunk = []
 
     for start_idx, end_idx in block_boundaries:
         block_len = end_idx - start_idx
@@ -184,11 +188,12 @@ def chunk_markdown(
                 )
             # On découpe ce très long bloc de façon naîve
             sub_chunks = chunk_text_by_size(
-                file_path, text, start_idx, end_idx, max_chunk_size
+                file_path, text, start_idx, end_idx, max_chunk_size, overlap=1000
             )
             chunks.extend(sub_chunks)
             current_start = end_idx
             current_end = end_idx
+            blocks_in_chunk = []
             continue
 
         # Si on depasse la limite en ajoutant le block courant
@@ -201,8 +206,18 @@ def chunk_markdown(
                     text=text[current_start:current_end].strip(),
                 )
             )
-            current_start = start_idx
+            # Overlap: on recule jusqu'à trouver un bloc qui donne ~1000 char de chevauchement
+            target_start = current_end - 1000
+            for b_start, b_end in blocks_in_chunk:
+                if b_start >= target_start:
+                    current_start = b_start
+                    break
+            else:
+                current_start = start_idx
+            
+            blocks_in_chunk = [(b_s, b_e) for b_s, b_e in blocks_in_chunk if b_s >= current_start]
 
+        blocks_in_chunk.append((start_idx, end_idx))
         current_end = end_idx
 
     if current_end > current_start:
