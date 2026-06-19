@@ -36,6 +36,10 @@ class RAGCLI:
 
         # 1. Pipeline d'ingestion (découpage)
         chunks = build_pipeline(repo_path, max_chunk_size=MAX_CHUNK_SIZE)
+        
+        if not chunks:
+            print(f"❌ Erreur : Aucun chunk généré à partir de '{repo_path}'.")
+            return
 
         # 2. Indexation BM25
         print(
@@ -107,8 +111,12 @@ class RAGCLI:
         retriever.load(INDEX_SAVE_DIR)
 
         print(f"📚 Chargement du dataset depuis {dataset_path}...")
-        with open(dataset_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with open(dataset_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            print(f"❌ Erreur lors de l'ouverture du dataset : {e}")
+            return
 
         # Parse Pydantic
         dataset = RagDataset(**data)
@@ -185,8 +193,12 @@ class RAGCLI:
         retriever = BM25Retriever()
         retriever.load(INDEX_SAVE_DIR)
 
-        with open(dataset_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        try:
+            with open(dataset_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            print(f"❌ Erreur lors de l'ouverture du dataset : {e}")
+            return
         dataset = RagDataset(**data)
 
         results_list = []
