@@ -46,13 +46,13 @@ We chose **BM25** (via the `bm25s` library), an advanced TF-IDF variant. It effi
 ## Example Usage
 ```bash
 # Index the vLLM repository
-make run -- index --repo_path vllm-0.10.1
+uv run python -m src.main index --repo_path vllm-0.10.1
 
 # Answer a query using top 5 context snippets
-make run -- answer "How to configure OpenAI server?" --k 5
+uv run python -m src.main answer "How to configure OpenAI server?" --k 5
 
 # Evaluate the retriever against ground truth
-make run -- evaluate --dataset_path data/datasets/AnsweredQuestions/dataset_docs_public.json --k 10
+uv run python -m src.main evaluate --dataset_path data/datasets/AnsweredQuestions/dataset_docs_public.json --k 10
 ```
 
 ## Resources
