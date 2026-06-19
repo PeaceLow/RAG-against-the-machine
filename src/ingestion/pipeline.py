@@ -4,7 +4,7 @@ from typing import List
 from tqdm import tqdm
 
 from src.models import Chunk
-from src.ingestion.chunker import chunk_python, chunk_markdown, chunk_text
+from src.ingestion.chunker import chunk_python, chunk_markdown
 
 
 def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
@@ -26,7 +26,9 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
         for file in files:
             file_paths.append(os.path.join(root, file))
 
-    print(f"🔍 Trouvé {len(file_paths)} fichiers dans {repo_path}. Début de l'ingestion...")
+    print(
+        f"🔍 Trouvé {len(file_paths)} fichiers dans {repo_path}. Début de l'ingestion..."
+    )
 
     for file_path in tqdm(file_paths, desc="Traitement des fichiers"):
         # Ignorer certains fichiers ou dossiers problématiques (ex: logs, pycache, .git)
@@ -39,7 +41,7 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
         except UnicodeDecodeError:
             # Ignorer les binaire (.png, .so, etc.)
             continue
-        except Exception as e:
+        except Exception:
             continue
 
         if not content.strip():
@@ -48,14 +50,18 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
         # Découpage différencié
         ext = Path(file_path).suffix.lower()
         if ext == ".py":
-            chunks = chunk_python(file_path, content, max_chunk_size=max_chunk_size)
+            chunks = chunk_python(
+                file_path, content, max_chunk_size=max_chunk_size
+            )
         elif ext == ".md":
-            chunks = chunk_markdown(file_path, content, max_chunk_size=max_chunk_size)
+            chunks = chunk_markdown(
+                file_path, content, max_chunk_size=max_chunk_size
+            )
         else:
             # On ignore les autres types de fichiers pour l'instant (ou fallback textuel)
             # chunks = chunk_text(file_path, content, max_chunk_size=max_chunk_size)
             continue
-            
+
         all_chunks.extend(chunks)
 
     print(f"✅ {len(all_chunks)} chunks générés avec succès.")

@@ -2,7 +2,7 @@ import os
 import json
 from typing import List
 
-import bm25s  # type: ignore
+import bm25s
 
 from src.models import Chunk
 from src.retrieval.base import BaseRetriever
@@ -56,8 +56,12 @@ class BM25Retriever(BaseRetriever):
         )
 
         # We take the first query's result
-        result_docs = docs[0, :k_min].tolist() if hasattr(docs, "tolist") else list(docs[0])
-        
+        result_docs = (
+            docs[0, :k_min].tolist()
+            if hasattr(docs, "tolist")
+            else list(docs[0])
+        )
+
         # We ensure they are valid chunks
         return [chunk for chunk in result_docs if isinstance(chunk, Chunk)]
 
@@ -74,7 +78,9 @@ class BM25Retriever(BaseRetriever):
 
         # Save chunks separately to preserve the Pydantic models structure
         chunks_data = [chunk.model_dump() for chunk in self.chunks]
-        with open(os.path.join(save_dir, "chunks.json"), "w", encoding="utf-8") as f:
+        with open(
+            os.path.join(save_dir, "chunks.json"), "w", encoding="utf-8"
+        ) as f:
             json.dump(chunks_data, f)
 
     def load(self, load_dir: str) -> None:
