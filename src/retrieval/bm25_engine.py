@@ -43,7 +43,10 @@ class BM25Retriever(BaseRetriever):
 
     def __init__(self) -> None:
         """Initialize the BM25 Retriever with optimized parameters for code."""
-        self.retriever = bm25s.BM25(k1=1.5, b=0.75)
+        # default k1 = 1.5, b=0.75
+        # Actual perf : 84.54
+        # Optimized for docs : k1 = 1.45, b=0.76
+        self.retriever = bm25s.BM25(k1=1.45, b=0.76)
         self.chunks: List[Chunk] = []
 
     def index(self, chunks: List[Chunk]) -> None:
