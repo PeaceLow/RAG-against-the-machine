@@ -170,7 +170,8 @@ def chunk_markdown(
 
     current_start = 0
     current_end = 0
-    blocks_in_chunk = []
+    from typing import Tuple
+    blocks_in_chunk: List[Tuple[int, int]] = []
 
     for start_idx, end_idx in block_boundaries:
         block_len = end_idx - start_idx

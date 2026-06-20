@@ -222,7 +222,7 @@ class RAGCLI:
 
         print(f"✅ Résultats de recherche sauvegardés dans {output_path}")
 
-    def answer(self, query: str, k: int = 5) -> None:
+    def answer(self, query: str, k: int = 5, stream: bool = False) -> None:
         """
         Répond à une question en utilisant le contexte récupéré.
         """
@@ -242,16 +242,21 @@ class RAGCLI:
 
         llm = LLMClient()
         try:
-            answer_text = llm.generate_answer(query, chunks)
+            if stream:
+                print("\n" + "=" * 50)
+                print("🎯 RÉPONSE GÉNÉRÉE")
+                print("=" * 50)
+                answer_text = llm.generate_answer(query, chunks, stream=True)
+                print("\n" + "=" * 50)
+            else:
+                answer_text = llm.generate_answer(query, chunks, stream=False)
+                print("\n" + "=" * 50)
+                print("🎯 RÉPONSE GÉNÉRÉE")
+                print("=" * 50)
+                print(answer_text)
+                print("=" * 50)
         except Exception as e:
             print(f"⚠️ Erreur lors de la génération : {e}")
-            answer_text = "Erreur de génération."
-
-        print("\n" + "=" * 50)
-        print("🎯 RÉPONSE GÉNÉRÉE")
-        print("=" * 50)
-        print(answer_text)
-        print("=" * 50)
 
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str

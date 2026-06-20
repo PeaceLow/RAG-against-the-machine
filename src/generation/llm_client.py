@@ -59,7 +59,7 @@ class LLMClient:
         getattr(self.model, "eval")()
 
     def generate_answer(
-        self, question: str, chunks: List[Chunk], max_new_tokens: int = 512
+        self, question: str, chunks: List[Chunk], max_new_tokens: int = 2048, stream: bool = False
     ) -> str:
         """
         Generate an answer to a question given a list of chunks as context.
@@ -103,24 +103,78 @@ class LLMClient:
         )
 
         # Generate response
-        with torch.no_grad():
-            generated_ids = self.model.generate(  # type: ignore[misc]
+        if stream:
+            from transformers import TextIteratorStreamer
+            from threading import Thread
+            import sys
+
+            streamer = TextIteratorStreamer(
+                self.tokenizer, skip_prompt=True, skip_special_tokens=True
+            )
+            generation_kwargs = dict(
                 **model_inputs,
                 max_new_tokens=max_new_tokens,
                 temperature=0.3,
                 do_sample=True,
                 pad_token_id=self.tokenizer.eos_token_id,
+                streamer=streamer,
             )
 
-        # Extract only the newly generated tokens
-        new_generated_ids = [
-            output_ids[len(input_ids) :]
-            for input_ids, output_ids in zip(
-                model_inputs.input_ids, generated_ids
+            thread = Thread(
+                target=self.model.generate,  # type: ignore[misc]
+                kwargs=generation_kwargs,
             )
-        ]
+            with torch.no_grad():
+                thread.start()
 
-        response = self.tokenizer.batch_decode(
-            new_generated_ids, skip_special_tokens=True
-        )[0]
-        return response.strip()
+            response_text = ""
+            for new_text in streamer:
+                # Colorize <think> blocks in gray if present
+                if "<think>" in new_text:
+                    new_text = new_text.replace("<think>", "\033[90m<think>")
+                if "</think>" in new_text:
+                    new_text = new_text.replace("</think>", "</think>\033[0m")
+                
+                sys.stdout.write(new_text)
+                sys.stdout.flush()
+                response_text += new_text
+
+            thread.join()
+            # Reset color just in case
+            sys.stdout.write("\033[0m")
+            sys.stdout.flush()
+
+            in_tokens = len(model_inputs.input_ids[0])
+            out_tokens = len(self.tokenizer.encode(response_text))
+            sys.stdout.write(f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) | ~{out_tokens} (réponse) ]\033[0m\n")
+            sys.stdout.flush()
+
+            return response_text.strip()
+        else:
+            with torch.no_grad():
+                generated_ids = self.model.generate(  # type: ignore[misc]
+                    **model_inputs,
+                    max_new_tokens=max_new_tokens,
+                    temperature=0.3,
+                    do_sample=True,
+                    pad_token_id=self.tokenizer.eos_token_id,
+                )
+
+            # Extract only the newly generated tokens
+            new_generated_ids = [
+                output_ids[len(input_ids) :]
+                for input_ids, output_ids in zip(
+                    model_inputs.input_ids, generated_ids
+                )
+            ]
+
+            response = self.tokenizer.batch_decode(
+                new_generated_ids, skip_special_tokens=True
+            )[0]
+            
+            in_tokens = len(model_inputs.input_ids[0])
+            out_tokens = len(new_generated_ids[0])
+            sys.stdout.write(f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) | {out_tokens} (réponse) ]\033[0m\n")
+            sys.stdout.flush()
+            
+            return response.strip()
