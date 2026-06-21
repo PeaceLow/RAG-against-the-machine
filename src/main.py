@@ -1,7 +1,10 @@
 import os
 import json
+
+# pyrefly: ignore [missing-import]
 import fire
 import time
+
 from tqdm import tqdm
 
 from src.ingestion.pipeline import build_pipeline
@@ -26,7 +29,9 @@ class RAGCLI:
     """CLI principale pour le système RAG."""
 
     def index(
-        self, repo_path: str = "vllm-0.10.1", max_chunk_size: int = MAX_CHUNK_SIZE
+        self,
+        repo_path: str = "vllm-0.10.1",
+        max_chunk_size: int = MAX_CHUNK_SIZE,
     ) -> None:
         """
         Indexe le dépôt de code.
@@ -39,14 +44,16 @@ class RAGCLI:
 
         # 1. Pipeline d'ingestion (découpage)
         chunks = build_pipeline(repo_path, max_chunk_size=max_chunk_size)
-        
+
         if not chunks:
-            print(f"❌ Erreur : Aucun chunk généré à partir de '{repo_path}'.")
+            print(
+                f"\033[91m\033[1mErreur\033[0m : Aucun chunk généré à partir de '{repo_path}'."  # noqa: E501
+            )
             return
 
         # 2. Indexation BM25
         print(
-            "⚙️ Indexation avec BM25 (Cela peut prendre quelques instants)..."
+            "\033[96m\033[1mIndexation avec BM25\033[0m (Cela peut prendre quelques instants)..."  # noqa: E501
         )
         retriever = BM25Retriever()
         retriever.index(chunks)
@@ -56,7 +63,7 @@ class RAGCLI:
 
         elapsed = time.time() - start_time
         print(
-            f"🎉 Indexation terminée et sauvegardée dans '{INDEX_SAVE_DIR}'. "
+            f"\033[92m\033[1mIndexation terminée\033[0m et sauvegardée dans '{INDEX_SAVE_DIR}'. "  # noqa: E501
             f"Temps écoulé : {elapsed:.2f} secondes."
         )
 
@@ -70,20 +77,22 @@ class RAGCLI:
         """
         if not os.path.exists(INDEX_SAVE_DIR):
             print(
-                "❌ Erreur : L'index n'existe pas. Veuillez exécuter "
+                "\033[91m\033[1mErreur\033[0m : L'index n'existe pas. Veuillez exécuter "  # noqa: E501
                 "'python -m src.main index' au préalable."
             )
             return
 
         # Chargement
-        print("⏳ Chargement du moteur de recherche...")
+        print("\033[93m\033[1mChargement du moteur de recherche...\033[0m")
         start_time = time.time()
         retriever = BM25Retriever()
         retriever.load(INDEX_SAVE_DIR)
-        print(f"✅ Moteur chargé en {time.time() - start_time:.2f}s")
+        print(
+            f"\033[92m\033[1mMoteur chargé\033[0m en {time.time() - start_time:.2f}s"  # noqa: E501
+        )
 
         # Recherche
-        print(f"🔍 Recherche pour : '{query}'...")
+        print(f"\033[96m\033[1mRecherche pour\033[0m : '{query}'...")
         results = retriever.search(query, k=k)
 
         print("\n" + "=" * 50)
@@ -109,28 +118,31 @@ class RAGCLI:
         """
         if not os.path.exists(INDEX_SAVE_DIR):
             print(
-                "❌ Erreur : L'index n'existe pas. Veuillez exécuter "
+                "\033[91m\033[1mErreur\033[0m : L'index n'existe pas. Veuillez exécuter "  # noqa: E501
                 "'python -m src.main index' au préalable."
             )
             return
 
-        print("⏳ Chargement du moteur de recherche...")
+        print("\033[93m\033[1mChargement du moteur de recherche...\033[0m")
         retriever = BM25Retriever()
         retriever.load(INDEX_SAVE_DIR)
 
-        print(f"📚 Chargement du dataset depuis {dataset_path}...")
+        print(
+            f"\033[96m\033[1mChargement du dataset\033[0m depuis {dataset_path}..."  # noqa: E501
+        )
         try:
             with open(dataset_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
+            dataset = RagDataset(**data)
         except Exception as e:
-            print(f"❌ Erreur lors de l'ouverture du dataset : {e}")
+            print(
+                f"\033[91m\033[1mErreur\033[0m lors de l'ouverture du dataset : {e}"  # noqa: E501
+            )
             return
-
-        # Parse Pydantic
-        dataset = RagDataset(**data)
 
         total_recall = 0.0
         question_count = 0
+        valid_q_count = 0
 
         doc_recall = 0.0
         doc_count = 0
@@ -139,7 +151,7 @@ class RAGCLI:
         code_count = 0
 
         print(
-            f"🏃 Début de l'évaluation sur {len(dataset.rag_questions)} "
+            f"\033[93m\033[1mDébut de l'évaluation\033[0m sur {len(dataset.rag_questions)} "  # noqa: E501
             f"questions (Recall@{k})..."
         )
         for q in tqdm(dataset.rag_questions, desc="Évaluation"):
@@ -152,6 +164,7 @@ class RAGCLI:
 
             total_recall += recall
             question_count += 1
+            valid_q_count += 1
 
             # Simple heuristique pour séparer la doc du code
             # (selon les sources)
@@ -165,10 +178,10 @@ class RAGCLI:
                 code_recall += recall
                 code_count += 1
 
-        if question_count == 0:
+        if valid_q_count == 0:
             print(
-                "❌ Aucune question avec sources (AnsweredQuestion) "
-                "dans ce dataset."
+                "\033[91m\033[1mAucune question\033[0m avec sources (AnsweredQuestion) "  # noqa: E501
+                "trouvée dans le dataset."
             )
             return
 
@@ -181,7 +194,7 @@ class RAGCLI:
         )
 
         print("\n" + "=" * 50)
-        print(f"📊 RÉSULTATS DE L'ÉVALUATION (Recall@{k})")
+        print(f"\033[96m\033[1mRÉSULTATS DE L'ÉVALUATION\033[0m (Recall@{k})")
         print("=" * 50)
         print(
             f"Global       : {mean_recall:.2f}% ({question_count} questions)"
@@ -199,7 +212,7 @@ class RAGCLI:
         Traite un fichier de questions et exporte les résultats de recherche.
         """
         if not os.path.exists(INDEX_SAVE_DIR):
-            print("❌ Erreur : L'index n'existe pas.")
+            print("\033[91m\033[1mErreur\033[0m : L'index n'existe pas.")
             return
 
         retriever = BM25Retriever()
@@ -209,7 +222,9 @@ class RAGCLI:
             with open(dataset_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception as e:
-            print(f"❌ Erreur lors de l'ouverture du dataset : {e}")
+            print(
+                f"\033[91m\033[1mErreur\033[0m lors de l'ouverture du dataset : {e}"  # noqa: E501
+            )
             return
         dataset = RagDataset(**data)
 
@@ -228,47 +243,57 @@ class RAGCLI:
         student_results = StudentSearchResults(
             search_results=results_list, k=k
         )
-
-        with open(output_path, "w", encoding="utf-8") as f:
-            json.dump(student_results.model_dump(), f, indent=2)
-
-        print(f"✅ Résultats de recherche sauvegardés dans {output_path}")
+        out_dict = student_results.model_dump()
+        try:
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(out_dict, f, indent=4)
+            print(
+                f"\033[92m\033[1mRésultats\033[0m sauvegardés dans {output_path}"  # noqa: E501
+            )
+        except Exception as e:
+            print(f"\033[91m\033[1mErreur\033[0m de sauvegarde : {e}")
 
     def answer(self, query: str, k: int = 5, stream: bool = False) -> None:
         """
         Répond à une question en utilisant le contexte récupéré.
         """
         if not os.path.exists(INDEX_SAVE_DIR):
-            print("❌ Erreur : L'index n'existe pas.")
+            print("\033[91m\033[1mErreur\033[0m : L'index n'existe pas.")
             return
 
         retriever = BM25Retriever()
         retriever.load(INDEX_SAVE_DIR)
 
-        print(f"🔍 Recherche de contexte pour : '{query}'...")
+        print(
+            f"\033[96m\033[1mRecherche de contexte\033[0m pour : '{query}'..."
+        )
         try:
             chunks = retriever.search(query, k=k)
         except Exception as e:
-            print(f"⚠️ Erreur lors de la recherche : {e}")
+            print(
+                f"\033[93m\033[1mAttention\033[0m : Erreur lors de la recherche : {e}"  # noqa: E501
+            )
             chunks = []
 
         llm = LLMClient()
         try:
             if stream:
                 print("\n" + "=" * 50)
-                print("🎯 RÉPONSE GÉNÉRÉE")
+                print("\033[96m\033[1mRÉPONSE GÉNÉRÉE\033[0m")
                 print("=" * 50)
                 answer_text = llm.generate_answer(query, chunks, stream=True)
                 print("\n" + "=" * 50)
             else:
                 answer_text = llm.generate_answer(query, chunks, stream=False)
                 print("\n" + "=" * 50)
-                print("🎯 RÉPONSE GÉNÉRÉE")
+                print("\033[96m\033[1mRÉPONSE GÉNÉRÉE\033[0m")
                 print("=" * 50)
                 print(answer_text)
                 print("=" * 50)
         except Exception as e:
-            print(f"⚠️ Erreur lors de la génération : {e}")
+            print(
+                f"\033[93m\033[1mAttention\033[0m : Erreur lors de la génération : {e}"  # noqa: E501
+            )
 
     def answer_dataset(
         self, student_search_results_path: str, save_directory: str
@@ -282,7 +307,7 @@ class RAGCLI:
                 data = json.load(f)
             search_results = StudentSearchResults(**data)
         except Exception as e:
-            print(f"❌ Erreur de chargement : {e}")
+            print(f"\033[91m\033[1mErreur\033[0m de chargement : {e}")
             return
 
         print(
@@ -301,8 +326,7 @@ class RAGCLI:
                     with open(src.file_path, "r", encoding="utf-8") as file:
                         content = file.read()
                         text = content[
-                            src.first_character_index :
-                            src.last_character_index
+                            src.first_character_index : src.last_character_index  # noqa: E501
                         ]
                         chunks.append(
                             Chunk(
@@ -348,7 +372,7 @@ class RAGCLI:
             )
             print(f"Saved student_search_results_and_answer to {output_path}")
         except Exception as e:
-            print(f"❌ Erreur de sauvegarde : {e}")
+            print(f"\033[91m\033[1mErreur\033[0m de sauvegarde : {e}")
 
 
 if __name__ == "__main__":

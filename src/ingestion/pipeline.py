@@ -27,8 +27,8 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
             file_paths.append(os.path.join(root, file))
 
     print(
-        f"🔍 Trouvé {len(file_paths)} fichiers dans {repo_path}. "
-        "Début de l'ingestion..."
+        f"\033[96m\033[1mTrouvé\033[0m {len(file_paths)} fichiers dans "
+        f"{repo_path}. Début de l'ingestion..."
     )
 
     for file_path in tqdm(file_paths, desc="Traitement des fichiers"):
@@ -69,5 +69,5 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
 
         all_chunks.extend(chunks)
 
-    print(f"✅ {len(all_chunks)} chunks générés avec succès.")
+    print(f"\033[92m\033[1mSuccès\033[0m : {len(all_chunks)} chunks générés.")
     return all_chunks

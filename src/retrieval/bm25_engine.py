@@ -3,7 +3,10 @@ import json
 import re
 from typing import List
 
+# pyrefly: ignore [missing-import]
 import bm25s
+
+# pyrefly: ignore [missing-import]
 import Stemmer
 
 from src.models import Chunk
@@ -15,20 +18,20 @@ def tokenize_code(texts: List[str]) -> List[List[str]]:
     Tokenize code while keeping original words, splitting snake_case,
     camelCase, and applying English stemming.
     """
-    stemmer = Stemmer.Stemmer('english')
+    stemmer = Stemmer.Stemmer("english")
     tokens_list = []
     for text in texts:
-        base_tokens = re.split(r'\W+', text)
+        base_tokens = re.split(r"\W+", text)
         extended_tokens = []
         for t in base_tokens:
             if not t:
                 continue
             extended_tokens.append(t)
-            if '_' in t:
-                extended_tokens.extend(t.split('_'))
+            if "_" in t:
+                extended_tokens.extend(t.split("_"))
             # Split camelCase
             matches = re.finditer(
-                r'.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', t
+                r".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", t
             )
             camel_parts = [m.group(0) for m in matches]
             if len(camel_parts) > 1:

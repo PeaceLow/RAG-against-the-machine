@@ -28,7 +28,10 @@ class LLMClient:
         else:
             self.device = device
 
-        print(f"⏳ Loading model {self.model_name} on {self.device}...")
+        print(
+            f"\033[93m\033[1mChargement\033[0m du modèle {self.model_name} "
+            f"sur {self.device}..."
+        )
         try:
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.model_name, trust_remote_code=True
@@ -42,8 +45,14 @@ class LLMClient:
                 trust_remote_code=True,
             )
         except Exception as e:
-            print(f"⚠️ Could not load {self.model_name}: {e}.")
-            print("🔄 Falling back to Qwen/Qwen2.5-0.5B-Instruct.")
+            print(
+                f"\033[93m\033[1mAttention\033[0m : Impossible de charger "
+                f"{self.model_name}: {e}."
+            )
+            print(
+                "\033[93m\033[1mFallback\033[0m : Retour sur "
+                "Qwen/Qwen2.5-0.5B-Instruct."
+            )
             self.model_name = "Qwen/Qwen2.5-0.5B-Instruct"
             self.tokenizer = AutoTokenizer.from_pretrained(
                 self.model_name, trust_remote_code=True
@@ -138,7 +147,7 @@ class LLMClient:
                     new_text = new_text.replace("<think>", "\033[90m<think>")
                 if "</think>" in new_text:
                     new_text = new_text.replace("</think>", "</think>\033[0m")
-                
+
                 sys.stdout.write(new_text)
                 sys.stdout.flush()
                 response_text += new_text
@@ -151,7 +160,8 @@ class LLMClient:
             in_tokens = len(model_inputs.input_ids[0])
             out_tokens = len(self.tokenizer.encode(response_text))
             sys.stdout.write(
-                f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) "
+                f"\n\n\033[96m\033[1m[ Résultats \033[0m: Tokens consommés : "
+                f"{in_tokens} (prompt) "
                 f"| ~{out_tokens} (réponse) ]\033[0m\n"
             )
             sys.stdout.flush()
@@ -178,13 +188,14 @@ class LLMClient:
             response = self.tokenizer.batch_decode(
                 new_generated_ids, skip_special_tokens=True
             )[0]
-            
+
             in_tokens = len(model_inputs.input_ids[0])
             out_tokens = len(new_generated_ids[0])
             sys.stdout.write(
-                f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) "
+                f"\n\n\033[96m\033[1m[ Résultats \033[0m: Tokens consommés : "
+                f"{in_tokens} (prompt) "
                 f"| {out_tokens} (réponse) ]\033[0m\n"
             )
             sys.stdout.flush()
-            
+
             return response.strip()

@@ -75,9 +75,8 @@ def chunk_python(
             # L'ast peut parfois donner un end_lineno plus loin que text len
             # si c'est la fin du fichier
             try:
-                node_end = (
-                    line_offsets[int(node.end_lineno or 0) - 1]
-                    + int(node.end_col_offset or 0)
+                node_end = line_offsets[int(node.end_lineno or 0) - 1] + int(
+                    node.end_col_offset or 0
                 )
             except IndexError:
                 node_end = len(text)
@@ -208,6 +207,7 @@ def chunk_markdown(
     current_start = 0
     current_end = 0
     from typing import Tuple
+
     blocks_in_chunk: List[Tuple[int, int]] = []
 
     for start_idx, end_idx in block_boundaries:
@@ -250,9 +250,10 @@ def chunk_markdown(
                     break
             else:
                 current_start = start_idx
-            
+
             blocks_in_chunk = [
-                (b_s, b_e) for b_s, b_e in blocks_in_chunk
+                (b_s, b_e)
+                for b_s, b_e in blocks_in_chunk
                 if b_s >= current_start
             ]
 
