@@ -176,6 +176,35 @@ def chunk_markdown(
     if last_end < len(text):
         block_boundaries.append((last_end, len(text)))
 
+    block_states = {}
+    h1, h2, h3 = "", "", ""
+    for start_idx, end_idx in block_boundaries:
+        block_text = text[start_idx:end_idx].strip()
+        first_line = block_text.split("\n")[0]
+        if first_line.startswith("# "):
+            h1 = first_line[2:].strip()
+            h2, h3 = "", ""
+        elif first_line.startswith("## "):
+            h2 = first_line[3:].strip()
+            h3 = ""
+        elif first_line.startswith("### "):
+            h3 = first_line[4:].strip()
+        block_states[start_idx] = (h1, h2, h3)
+
+    def _create_chunk(start: int, end: int) -> Chunk:
+        s_h1, s_h2, s_h3 = block_states.get(start, ("", "", ""))
+        headers = [h for h in (s_h1, s_h2, s_h3) if h]
+        prefix = ""
+        if headers:
+            prefix = "Context: " + " > ".join(headers) + "\n\n"
+        chunk_text = prefix + text[start:end].strip()
+        return Chunk(
+            file_path=file_path,
+            first_character_index=start,
+            last_character_index=end,
+            text=chunk_text,
+        )
+
     current_start = 0
     current_end = 0
     from typing import Tuple
@@ -187,14 +216,7 @@ def chunk_markdown(
         # Si un seul bloc depasse la taille max
         if block_len > max_chunk_size:
             if current_end > current_start:
-                chunks.append(
-                    Chunk(
-                        file_path=file_path,
-                        first_character_index=current_start,
-                        last_character_index=current_end,
-                        text=text[current_start:current_end].strip(),
-                    )
-                )
+                chunks.append(_create_chunk(current_start, current_end))
             # On découpe ce très long bloc de façon naîve
             sub_chunks = chunk_text_by_size(
                 file_path,
@@ -204,6 +226,12 @@ def chunk_markdown(
                 max_chunk_size,
                 overlap=1000,
             )
+            s_h1, s_h2, s_h3 = block_states.get(start_idx, ("", "", ""))
+            headers = [h for h in (s_h1, s_h2, s_h3) if h]
+            if headers:
+                prefix = "Context: " + " > ".join(headers) + "\n\n"
+                for sc in sub_chunks:
+                    sc.text = prefix + sc.text
             chunks.extend(sub_chunks)
             current_start = end_idx
             current_end = end_idx
@@ -212,14 +240,7 @@ def chunk_markdown(
 
         # Si on depasse la limite en ajoutant le block courant
         if (end_idx - current_start) > max_chunk_size:
-            chunks.append(
-                Chunk(
-                    file_path=file_path,
-                    first_character_index=current_start,
-                    last_character_index=current_end,
-                    text=text[current_start:current_end].strip(),
-                )
-            )
+            chunks.append(_create_chunk(current_start, current_end))
             # Overlap: on recule jusqu'à trouver un bloc
             # qui donne ~1000 char de chevauchement
             target_start = current_end - 1000
@@ -241,13 +262,6 @@ def chunk_markdown(
     if current_end > current_start:
         chunk_str = text[current_start:current_end].strip()
         if chunk_str:
-            chunks.append(
-                Chunk(
-                    file_path=file_path,
-                    first_character_index=current_start,
-                    last_character_index=current_end,
-                    text=chunk_str,
-                )
-            )
+            chunks.append(_create_chunk(current_start, current_end))
 
     return chunks
