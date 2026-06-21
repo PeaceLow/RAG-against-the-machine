@@ -27,11 +27,13 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
             file_paths.append(os.path.join(root, file))
 
     print(
-        f"🔍 Trouvé {len(file_paths)} fichiers dans {repo_path}. Début de l'ingestion..."
+        f"🔍 Trouvé {len(file_paths)} fichiers dans {repo_path}. "
+        "Début de l'ingestion..."
     )
 
     for file_path in tqdm(file_paths, desc="Traitement des fichiers"):
-        # Ignorer certains fichiers ou dossiers problématiques (ex: logs, pycache, .git)
+        # Ignorer certains fichiers ou dossiers problématiques
+        # (ex: logs, pycache, .git)
         if ".git" in file_path or "__pycache__" in file_path:
             continue
 
@@ -58,8 +60,11 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
                 file_path, content, max_chunk_size=max_chunk_size
             )
         else:
-            # On ignore les autres types de fichiers pour l'instant (ou fallback textuel)
-            # chunks = chunk_text(file_path, content, max_chunk_size=max_chunk_size)
+            # On ignore les autres types de fichiers pour l'instant
+            # (ou fallback textuel)
+            # chunks = chunk_text(
+            #     file_path, content, max_chunk_size=max_chunk_size
+            # )
             continue
 
         all_chunks.extend(chunks)

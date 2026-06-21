@@ -24,7 +24,8 @@ class BaseRetriever(ABC):
 
         Args:
             query (str): The search query.
-            k (int, optional): The number of top chunks to return. Defaults to 5.
+            k (int, optional): The number of top chunks to return.
+                               Defaults to 5.
 
         Returns:
             List[Chunk]: The top k chunks.

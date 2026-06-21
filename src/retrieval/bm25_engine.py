@@ -12,8 +12,8 @@ from src.retrieval.base import BaseRetriever
 
 def tokenize_code(texts: List[str]) -> List[List[str]]:
     """
-    Tokenize code while keeping original words, splitting snake_case, camelCase,
-    and applying English stemming.
+    Tokenize code while keeping original words, splitting snake_case,
+    camelCase, and applying English stemming.
     """
     stemmer = Stemmer.Stemmer('english')
     tokens_list = []
@@ -27,13 +27,17 @@ def tokenize_code(texts: List[str]) -> List[List[str]]:
             if '_' in t:
                 extended_tokens.extend(t.split('_'))
             # Split camelCase
-            matches = re.finditer(r'.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', t)
+            matches = re.finditer(
+                r'.+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)', t
+            )
             camel_parts = [m.group(0) for m in matches]
             if len(camel_parts) > 1:
                 extended_tokens.extend(camel_parts)
 
         # Stemming and lowercase
-        final_tokens = [stemmer.stemWord(x.lower()) for x in extended_tokens if x]
+        final_tokens = [
+            stemmer.stemWord(x.lower()) for x in extended_tokens if x
+        ]
         tokens_list.append(final_tokens)
     return tokens_list
 
@@ -123,7 +127,8 @@ class BM25Retriever(BaseRetriever):
         Args:
             load_dir (str): Directory from which to load.
         """
-        # Load bm25s state (we skip token corpus loading to handle our custom Chunks)
+        # Load bm25s state (we skip token corpus loading
+        # to handle our custom Chunks)
         self.retriever = bm25s.BM25.load(load_dir, load_corpus=False)
 
         chunks_path = os.path.join(load_dir, "chunks.json")

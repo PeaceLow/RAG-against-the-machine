@@ -1,5 +1,6 @@
 import torch
 from typing import List
+import sys
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from src.models import Chunk
@@ -59,7 +60,11 @@ class LLMClient:
         getattr(self.model, "eval")()
 
     def generate_answer(
-        self, question: str, chunks: List[Chunk], max_new_tokens: int = 2048, stream: bool = False
+        self,
+        question: str,
+        chunks: List[Chunk],
+        max_new_tokens: int = 2048,
+        stream: bool = False,
     ) -> str:
         """
         Generate an answer to a question given a list of chunks as context.
@@ -106,7 +111,6 @@ class LLMClient:
         if stream:
             from transformers import TextIteratorStreamer
             from threading import Thread
-            import sys
 
             streamer = TextIteratorStreamer(
                 self.tokenizer, skip_prompt=True, skip_special_tokens=True
@@ -146,7 +150,10 @@ class LLMClient:
 
             in_tokens = len(model_inputs.input_ids[0])
             out_tokens = len(self.tokenizer.encode(response_text))
-            sys.stdout.write(f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) | ~{out_tokens} (réponse) ]\033[0m\n")
+            sys.stdout.write(
+                f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) "
+                f"| ~{out_tokens} (réponse) ]\033[0m\n"
+            )
             sys.stdout.flush()
 
             return response_text.strip()
@@ -174,7 +181,10 @@ class LLMClient:
             
             in_tokens = len(model_inputs.input_ids[0])
             out_tokens = len(new_generated_ids[0])
-            sys.stdout.write(f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) | {out_tokens} (réponse) ]\033[0m\n")
+            sys.stdout.write(
+                f"\n\n\033[96m[ 📊 Tokens consommés : {in_tokens} (prompt) "
+                f"| {out_tokens} (réponse) ]\033[0m\n"
+            )
             sys.stdout.flush()
             
             return response.strip()

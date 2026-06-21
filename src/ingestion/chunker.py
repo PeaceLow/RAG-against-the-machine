@@ -19,15 +19,18 @@ def chunk_python(
 ) -> List[Chunk]:
     """
     Decoupe intelligemment un fichier Python en utilisant l'AST.
-    Associe les noeuds de type FunctionDef, ClassDef et autres blocs pertinents.
-    Si un bloc dépasse max_chunk_size, il est découpé par chunks plus petits selon la méthode par defaut.
+    Associe les noeuds de type FunctionDef, ClassDef et autres blocs
+    pertinents.
+    Si un bloc dépasse max_chunk_size, il est découpé par chunks plus
+    petits selon la méthode par defaut.
     """
     chunks = []
 
     try:
         tree = ast.parse(text)
     except Exception:
-        # En cas d'échec du parseur AST, utiliser une solution de repli (par ex: chunk texte par texte)
+        # En cas d'échec du parseur AST, utiliser une solution de repli
+        # (par ex: chunk texte par texte)
         return chunk_text(file_path, text, max_chunk_size)
 
     line_offsets = _get_line_offsets(text)
@@ -69,13 +72,18 @@ def chunk_python(
             and hasattr(node, "end_col_offset")
         ):
             node_start = line_offsets[node.lineno - 1] + node.col_offset
-            # L'ast peut parfois donner un end_lineno plus loin que text len si c'est la fin du fichier
+            # L'ast peut parfois donner un end_lineno plus loin que text len
+            # si c'est la fin du fichier
             try:
-                node_end = line_offsets[int(node.end_lineno) - 1] + int(node.end_col_offset)  # type: ignore
+                node_end = (
+                    line_offsets[int(node.end_lineno or 0) - 1]
+                    + int(node.end_col_offset or 0)
+                )
             except IndexError:
                 node_end = len(text)
 
-            # Gérer la limite max_chunk_size en groupant les petits noeuds ou en les séparant
+            # Gérer la limite max_chunk_size en groupant les petits noeuds
+            # ou en les séparant
             node_length = node_end - node_start
 
             if current_chunk_text and (
@@ -189,7 +197,12 @@ def chunk_markdown(
                 )
             # On découpe ce très long bloc de façon naîve
             sub_chunks = chunk_text_by_size(
-                file_path, text, start_idx, end_idx, max_chunk_size, overlap=1000
+                file_path,
+                text,
+                start_idx,
+                end_idx,
+                max_chunk_size,
+                overlap=1000,
             )
             chunks.extend(sub_chunks)
             current_start = end_idx
@@ -207,7 +220,8 @@ def chunk_markdown(
                     text=text[current_start:current_end].strip(),
                 )
             )
-            # Overlap: on recule jusqu'à trouver un bloc qui donne ~1000 char de chevauchement
+            # Overlap: on recule jusqu'à trouver un bloc
+            # qui donne ~1000 char de chevauchement
             target_start = current_end - 1000
             for b_start, b_end in blocks_in_chunk:
                 if b_start >= target_start:
@@ -216,7 +230,10 @@ def chunk_markdown(
             else:
                 current_start = start_idx
             
-            blocks_in_chunk = [(b_s, b_e) for b_s, b_e in blocks_in_chunk if b_s >= current_start]
+            blocks_in_chunk = [
+                (b_s, b_e) for b_s, b_e in blocks_in_chunk
+                if b_s >= current_start
+            ]
 
         blocks_in_chunk.append((start_idx, end_idx))
         current_end = end_idx

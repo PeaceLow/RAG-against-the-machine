@@ -53,7 +53,8 @@ class RAGCLI:
 
         elapsed = time.time() - start_time
         print(
-            f"🎉 Indexation terminée et sauvegardée dans '{INDEX_SAVE_DIR}'. Temps écoulé : {elapsed:.2f} secondes."
+            f"🎉 Indexation terminée et sauvegardée dans '{INDEX_SAVE_DIR}'. "
+            f"Temps écoulé : {elapsed:.2f} secondes."
         )
 
     def search(self, query: str, k: int = 5) -> None:
@@ -66,7 +67,8 @@ class RAGCLI:
         """
         if not os.path.exists(INDEX_SAVE_DIR):
             print(
-                "❌ Erreur : L'index n'existe pas. Veuillez exécuter 'python -m src.main index' au préalable."
+                "❌ Erreur : L'index n'existe pas. Veuillez exécuter "
+                "'python -m src.main index' au préalable."
             )
             return
 
@@ -87,7 +89,8 @@ class RAGCLI:
         for i, chunk in enumerate(results, 1):
             print(f"\n[{i}] Fichier : {chunk.file_path}")
             print(
-                f"    Positions : {chunk.first_character_index} - {chunk.last_character_index}"
+                f"    Positions : {chunk.first_character_index} - "
+                f"{chunk.last_character_index}"
             )
             text_preview = chunk.text[:200].replace("\n", " ")
             print(f"    Aperçu : {text_preview}...")
@@ -97,12 +100,14 @@ class RAGCLI:
         Évalue le Recall@k sur un jeu de données (JSON).
 
         Args:
-            dataset_path (str): Chemin vers le fichier JSON du dataset (ground truth).
+            dataset_path (str): Chemin vers le fichier JSON du dataset
+                                (ground truth).
             k (int): Le k pour calculer le Recall@k.
         """
         if not os.path.exists(INDEX_SAVE_DIR):
             print(
-                "❌ Erreur : L'index n'existe pas. Veuillez exécuter 'python -m src.main index' au préalable."
+                "❌ Erreur : L'index n'existe pas. Veuillez exécuter "
+                "'python -m src.main index' au préalable."
             )
             return
 
@@ -131,7 +136,8 @@ class RAGCLI:
         code_count = 0
 
         print(
-            f"🏃 Début de l'évaluation sur {len(dataset.rag_questions)} questions (Recall@{k})..."
+            f"🏃 Début de l'évaluation sur {len(dataset.rag_questions)} "
+            f"questions (Recall@{k})..."
         )
         for q in tqdm(dataset.rag_questions, desc="Évaluation"):
             # On ne prend que les questions annotées (qui ont des sources)
@@ -144,8 +150,10 @@ class RAGCLI:
             total_recall += recall
             question_count += 1
 
-            # Simple heuristique pour séparer la doc du code (selon les sources)
-            # Si au moins une source est du Markdown, on considère que c'est une question DOC, sinon CODE
+            # Simple heuristique pour séparer la doc du code
+            # (selon les sources)
+            # Si au moins une source est du Markdown, on considère que c'est
+            # une question DOC, sinon CODE
             is_doc = any(s.file_path.endswith(".md") for s in q.sources)
             if is_doc:
                 doc_recall += recall
@@ -156,7 +164,8 @@ class RAGCLI:
 
         if question_count == 0:
             print(
-                "❌ Aucune question avec sources (AnsweredQuestion) dans ce dataset."
+                "❌ Aucune question avec sources (AnsweredQuestion) "
+                "dans ce dataset."
             )
             return
 
@@ -262,7 +271,8 @@ class RAGCLI:
         self, student_search_results_path: str, save_directory: str
     ) -> None:
         """
-        Génère les réponses de tout un dataset à partir des résultats de recherche.
+        Génère les réponses de tout un dataset à partir des
+        résultats de recherche.
         """
         try:
             with open(student_search_results_path, "r", encoding="utf-8") as f:
@@ -273,7 +283,8 @@ class RAGCLI:
             return
 
         print(
-            f"Loaded {len(search_results.search_results)} questions from {student_search_results_path}"
+            f"Loaded {len(search_results.search_results)} questions "
+            f"from {student_search_results_path}"
         )
         llm = LLMClient()
 
@@ -287,12 +298,15 @@ class RAGCLI:
                     with open(src.file_path, "r", encoding="utf-8") as file:
                         content = file.read()
                         text = content[
-                            src.first_character_index : src.last_character_index
+                            src.first_character_index :
+                            src.last_character_index
                         ]
                         chunks.append(
                             Chunk(
                                 file_path=src.file_path,
-                                first_character_index=src.first_character_index,
+                                first_character_index=(
+                                    src.first_character_index
+                                ),
                                 last_character_index=src.last_character_index,
                                 text=text,
                             )
@@ -326,7 +340,8 @@ class RAGCLI:
             with open(output_path, "w", encoding="utf-8") as f:
                 json.dump(final_result.model_dump(), f, indent=2)
             print(
-                f"Processed {len(answered_results)} of {len(answered_results)} questions"
+                f"Processed {len(answered_results)} of "
+                f"{len(answered_results)} questions"
             )
             print(f"Saved student_search_results_and_answer to {output_path}")
         except Exception as e:

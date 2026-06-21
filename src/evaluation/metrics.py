@@ -19,7 +19,8 @@ def compute_overlap_percentage(
     ground_truth: MinimalSource, retrieved: Chunk
 ) -> float:
     """
-    Calcule le pourcentage de chevauchement d'un chunk récupéré sur une source ground truth.
+    Calcule le pourcentage de chevauchement d'un chunk récupéré sur une source
+    ground truth.
     Le pourcentage est par rapport à la taille de la source ground truth.
     """
     gt_path = _normalize_path(ground_truth.file_path)
