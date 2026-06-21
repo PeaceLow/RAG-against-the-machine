@@ -25,17 +25,20 @@ INDEX_SAVE_DIR = "data/processed/bm25_index"
 class RAGCLI:
     """CLI principale pour le système RAG."""
 
-    def index(self, repo_path: str = "vllm-0.10.1") -> None:
+    def index(
+        self, repo_path: str = "vllm-0.10.1", max_chunk_size: int = MAX_CHUNK_SIZE
+    ) -> None:
         """
         Indexe le dépôt de code.
 
         Args:
             repo_path (str): Le chemin vers le dépôt à indexer.
+            max_chunk_size (int): Taille maximale d'un chunk.
         """
         start_time = time.time()
 
         # 1. Pipeline d'ingestion (découpage)
-        chunks = build_pipeline(repo_path, max_chunk_size=MAX_CHUNK_SIZE)
+        chunks = build_pipeline(repo_path, max_chunk_size=max_chunk_size)
         
         if not chunks:
             print(f"❌ Erreur : Aucun chunk généré à partir de '{repo_path}'.")

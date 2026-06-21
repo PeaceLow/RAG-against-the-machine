@@ -19,3 +19,6 @@ dependencies = [
     "tqdm>=4.67.3",
     "transformers>=5.12.1",
 ]
+
+[tool.pyright]
+extraPaths = ["."]
