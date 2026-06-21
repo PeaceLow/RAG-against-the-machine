@@ -51,7 +51,7 @@ We chose **BM25** (via the `bm25s` library), an advanced TF-IDF variant. It effi
 uv run python -m src.main index --repo_path vllm-0.10.1
 
 # Answer a query using top 5 context snippets
-uv run python -m src.main answer "How to configure OpenAI server?" --k 5
+uv run python -m src.main answer "How to configure OpenAI server?" --k 5 --stream True
 
 # Evaluate the retriever against ground truth
 uv run python -m src.main evaluate --dataset_path datasets_public/public/AnsweredQuestions/dataset_docs_public.json --k 10
