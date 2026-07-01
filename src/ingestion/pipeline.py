@@ -20,7 +20,6 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
     """
     all_chunks: List[Chunk] = []
 
-    # Recueillir tous les chemins de fichiers que l'on veut parser
     file_paths = []
     for root, _, files in os.walk(repo_path):
         for file in files:
@@ -32,8 +31,6 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
     )
 
     for file_path in tqdm(file_paths, desc="Traitement des fichiers"):
-        # Ignorer certains fichiers ou dossiers problématiques
-        # (ex: logs, pycache, .git)
         if ".git" in file_path or "__pycache__" in file_path:
             continue
 
@@ -41,7 +38,6 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read()
         except UnicodeDecodeError:
-            # Ignorer les binaire (.png, .so, etc.)
             continue
         except Exception:
             continue
@@ -49,7 +45,6 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
         if not content.strip():
             continue
 
-        # Découpage différencié
         ext = Path(file_path).suffix.lower()
         if ext == ".py":
             chunks = chunk_python(
@@ -60,11 +55,6 @@ def build_pipeline(repo_path: str, max_chunk_size: int = 2000) -> List[Chunk]:
                 file_path, content, max_chunk_size=max_chunk_size
             )
         else:
-            # On ignore les autres types de fichiers pour l'instant
-            # (ou fallback textuel)
-            # chunks = chunk_text(
-            #     file_path, content, max_chunk_size=max_chunk_size
-            # )
             continue
 
         all_chunks.extend(chunks)

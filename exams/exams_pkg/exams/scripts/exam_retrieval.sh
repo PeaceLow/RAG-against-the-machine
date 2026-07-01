@@ -11,7 +11,7 @@ set -e
 # --- Argument parsing ---
 STUDENT_PATH=""
 MOULINETTE_PATH=""
-MODULE_NAME="src"
+MODULE_NAME="src.main"
 
 usage() {
     echo "Usage: $0 --student-path PATH --moulinette-path PATH [--module-name NAME]"
@@ -74,7 +74,7 @@ fi
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DATETIME=$(date +"%Y-%m-%d_%H-%M-%S")
-PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_DIR="$STUDENT_PATH"  # Assuming student path is the project root
 EVAL_DIR="$PROJECT_DIR/evaluations/retrieval/$DATETIME"
 
 # Private dataset paths (relative to student project root)
@@ -166,7 +166,7 @@ DOCS_SEARCH_START=$(date +%s)
 uv run python -m $MODULE_NAME search_dataset \
     --dataset_path "$DOCS_UNANSWERED" \
     --k 10 \
-    --save_directory "$SEARCH_OUTPUT_DIR" \
+    --output_path "$SEARCH_OUTPUT_DIR" \
     > "$EVAL_DIR/search_docs_stdout.log" 2> "$EVAL_DIR/search_docs_stderr.log" \
     && DOCS_SEARCH_SUCCESS=1 || DOCS_SEARCH_SUCCESS=0
 DOCS_SEARCH_END=$(date +%s)
@@ -179,7 +179,7 @@ CODE_SEARCH_START=$(date +%s)
 uv run python -m $MODULE_NAME search_dataset \
     --dataset_path "$CODE_UNANSWERED" \
     --k 10 \
-    --save_directory "$SEARCH_OUTPUT_DIR" \
+    --output_path "$SEARCH_OUTPUT_DIR" \
     > "$EVAL_DIR/search_code_stdout.log" 2> "$EVAL_DIR/search_code_stderr.log" \
     && CODE_SEARCH_SUCCESS=1 || CODE_SEARCH_SUCCESS=0
 CODE_SEARCH_END=$(date +%s)

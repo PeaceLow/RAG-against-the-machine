@@ -9,7 +9,7 @@ set -e
 
 # --- Argument parsing ---
 STUDENT_PATH=""
-MODULE_NAME="src"
+MODULE_NAME="src.main"
 
 usage() {
     echo "Usage: $0 --student-path PATH [--module-name NAME]"

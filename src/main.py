@@ -96,7 +96,7 @@ class RAGCLI:
         results = retriever.search(query, k=k)
 
         print("\n" + "=" * 50)
-        print("🎯 RÉSULTATS DE RECHERCHE")
+        print(" RÉSULTATS DE RECHERCHE")
         print("=" * 50)
         for i, chunk in enumerate(results, 1):
             print(f"\n[{i}] Fichier : {chunk.file_path}")
@@ -155,7 +155,6 @@ class RAGCLI:
             f"questions (Recall@{k})..."
         )
         for q in tqdm(dataset.rag_questions, desc="Évaluation"):
-            # On ne prend que les questions annotées (qui ont des sources)
             if not isinstance(q, AnsweredQuestion) or not q.sources:
                 continue
 
@@ -166,10 +165,6 @@ class RAGCLI:
             question_count += 1
             valid_q_count += 1
 
-            # Simple heuristique pour séparer la doc du code
-            # (selon les sources)
-            # Si au moins une source est du Markdown, on considère que c'est
-            # une question DOC, sinon CODE
             is_doc = any(s.file_path.endswith(".md") for s in q.sources)
             if is_doc:
                 doc_recall += recall
@@ -231,7 +226,11 @@ class RAGCLI:
         results_list = []
         for q in tqdm(dataset.rag_questions, desc="Recherche en cours"):
             chunks = retriever.search(q.question, k=k)
-            # Conversion implict Chunk -> MinimalSource
+
+            for chunk in chunks:
+                if chunk.file_path.startswith("vllm-0.10.1"):
+                    chunk.file_path = f"data/raw/{chunk.file_path}"
+
             results_list.append(
                 MinimalSearchResults(
                     question_id=q.question_id,
@@ -243,12 +242,19 @@ class RAGCLI:
         student_results = StudentSearchResults(
             search_results=results_list, k=k
         )
-        out_dict = student_results.model_dump()
+        out_dict = student_results.model_dump(by_alias=True)
+        os.makedirs(output_path, exist_ok=True)
+
+        input_filename = os.path.basename(dataset_path)
+        final_file_path = os.path.join(output_path,
+                                       f"results_{input_filename}")
+
         try:
-            with open(output_path, "w", encoding="utf-8") as f:
+            with open(final_file_path, "w", encoding="utf-8") as f:
                 json.dump(out_dict, f, indent=4)
             print(
-                f"\033[92m\033[1mRésultats\033[0m sauvegardés dans {output_path}"  # noqa: E501
+                f"\033[92m\033[1mRésultats\033[0m "
+                f"sauvegardés dans {final_file_path}"
             )
         except Exception as e:
             print(f"\033[91m\033[1mErreur\033[0m de sauvegarde : {e}")
@@ -326,7 +332,7 @@ class RAGCLI:
                     with open(src.file_path, "r", encoding="utf-8") as file:
                         content = file.read()
                         text = content[
-                            src.first_character_index : src.last_character_index  # noqa: E501
+                            src.first_character_index: src.last_character_index  # noqa: E501
                         ]
                         chunks.append(
                             Chunk(

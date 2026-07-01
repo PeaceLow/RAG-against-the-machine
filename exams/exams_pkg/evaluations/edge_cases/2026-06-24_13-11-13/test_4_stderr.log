@@ -1,0 +1,6 @@
+ERROR: The function received no value for the required argument: output_path
+Usage: main.py search_dataset DATASET_PATH OUTPUT_PATH <flags>
+  optional flags:        --k
+
+For detailed information on this command, run:
+  main.py search_dataset --help

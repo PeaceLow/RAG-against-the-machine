@@ -1,0 +1,7 @@
+MOULINETTE ARGS: ['/home/avauclai/Desktop/RAG/src/__main__.py', 'search_dataset', '--dataset_path', '/home/avauclai/Desktop/RAG/exams/exams_pkg/data/datasets/private/UnansweredQuestions/dataset_docs_private.json', '--k', '10', '--save_directory', '/home/avauclai/Desktop/RAG/exams/exams_pkg/evaluations/retrieval/2026-06-22_16-33-17/search_results']
+ERROR: The function received no value for the required argument: output_path
+Usage: __main__.py search_dataset DATASET_PATH OUTPUT_PATH <flags>
+  optional flags:        --k
+
+For detailed information on this command, run:
+  __main__.py search_dataset --help

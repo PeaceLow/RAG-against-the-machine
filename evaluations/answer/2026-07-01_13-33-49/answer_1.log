@@ -1,0 +1,26 @@
+[96m[1mRecherche de contexte[0m pour : 'What causes the NCCL error "unhandled system error" during ncclCommInitRank in vLLM distributed serving?'...
+[93m[1mChargement[0m du modèle Qwen/Qwen3-0.6B sur cpu...
+[90mCompilation du modèle en cours (le premier run sera plus long)...[0m
+
+==================================================
+[96m[1mRÉPONSE GÉNÉRÉE[0m
+==================================================
+[90m<think>
+Okay, let's see. The user is asking what causes the NCCL error "unhandled system error during ncclCommInitRank" in vLLM's distributed serving. 
+
+Looking at the context provided, there are several sources. Source 1 mentions that if there's no clear error message with NCCL_DEBUG=INFO, it might look like this. The error is about the NCCL communicator initializing, possibly due to missing IPC_LOCK or an unmounted /dev/shm. Source 3 and 4 talk about initializing the device and using the vLLM config, but not directly the error. Source 5 and 6 mention CUDA IPC, which is a different approach from NCCL. 
+
+Wait, the error in question is specifically about the NCCL communicator. The context from Source 1 says that if there's no clear error message, it might look like this. The error is unhandled system error during the initialization. The possible causes listed in Source 1 are missing IPC_LOCK or unmounted /dev/shm. 
+
+So the main causes are: 
+1. Missing IPC_LOCK on Linux. 
+2. An unmounted /dev/shm directory. 
+
+I should make sure there's no other information in the context that mentions these points. The other sources talk about model support, device type, and logging, but not the specific error. So the answer should focus on those two points.
+</think>[0m
+
+The NCCL error "unhandled system error during `ncclCommInitRank"` in vLLM's distributed serving is caused by **missing `IPC_LOCK`** on Linux systems or **an unmounted `/dev/shm` directory**. These issues prevent the NCCL communicator from initializing properly, leading to the described error.[0m
+
+[96m[1m[ Résultats [0m: Tokens consommés : 4344 (prompt) | ~364 (réponse) ][0m
+
+==================================================

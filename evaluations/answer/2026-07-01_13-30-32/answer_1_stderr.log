@@ -1,0 +1,61 @@
+BM25S Retrieve:   0%|          | 0/1 [00:00<?, ?it/s]                                                     Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:   0%|          | 1/311 [00:00<00:59,  5.19it/s]Loading weights:  86%|████████▋ | 269/311 [00:00<00:00, 1142.66it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 997.00it/s] 
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/avauclai/Desktop/RAGGGG/src/main.py", line 385, in <module>
+    fire.Fire(RAGCLI)
+    ~~~~~~~~~^^^^^^^^
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/fire/core.py", line 135, in Fire
+    component_trace = _Fire(component, args, parsed_flag_args, context, name)
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/fire/core.py", line 468, in _Fire
+    component, remaining_args = _CallAndUpdateTrace(
+                                ~~~~~~~~~~~~~~~~~~~^
+        component,
+        ^^^^^^^^^^
+    ...<2 lines>...
+        treatment='class' if is_class else 'routine',
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        target=component.__name__)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/fire/core.py", line 684, in _CallAndUpdateTrace
+    component = fn(*varargs, **kwargs)
+  File "/home/avauclai/Desktop/RAGGGG/src/main.py", line 293, in answer
+    answer_text = llm.generate_answer(query, chunks, stream=False)
+  File "/home/avauclai/Desktop/RAGGGG/src/generation/llm_client.py", line 182, in generate_answer
+    generated_ids = self.model.generate(  # type: ignore[misc]
+        **model_inputs,
+    ...<2 lines>...
+        pad_token_id=self.tokenizer.eos_token_id,
+    )
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/transformers/generation/utils.py", line 2584, in generate
+    result = decoding_method(
+        self,
+    ...<5 lines>...
+        **model_kwargs,
+    )
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/transformers/generation/utils.py", line 2798, in _sample
+    outputs = model_forward(**model_inputs, return_dict=True)
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/transformers/utils/generic.py", line 907, in wrapper
+    output = func(self, *args, **kwargs)
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/transformers/models/qwen3/modeling_qwen3.py", line 505, in forward
+    logits = self.lm_head(hidden_states[:, slice_indices, :])
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1778, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/torch/nn/modules/module.py", line 1789, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/avauclai/Desktop/RAGGGG/.venv/lib/python3.14/site-packages/torch/nn/modules/linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+           ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Exception ignored while flushing sys.stdout:
+BrokenPipeError: [Errno 32] Broken pipe

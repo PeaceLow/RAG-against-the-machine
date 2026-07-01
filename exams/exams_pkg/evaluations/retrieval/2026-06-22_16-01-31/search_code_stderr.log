@@ -1,0 +1,2 @@
+warning: `VIRTUAL_ENV=/home/avauclai/Desktop/RAG/.venv` does not match the project environment path `/goinfre/avauclai/elsahin/.venv` and will be ignored; use `--active` to target the active environment instead
+/goinfre/avauclai/elsahin/.venv/bin/python3: No module named src

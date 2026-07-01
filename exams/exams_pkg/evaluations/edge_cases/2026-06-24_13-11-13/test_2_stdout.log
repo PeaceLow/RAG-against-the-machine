@@ -1,0 +1,47 @@
+[93m[1mChargement du moteur de recherche...[0m
+[92m[1mMoteur chargé[0m en 0.14s
+[96m[1mRecherche pour[0m : 'asdfghjkl zxcvbnm qwertyuiop'...
+
+==================================================
+ RÉSULTATS DE RECHERCHE
+==================================================
+
+[1] Fichier : vllm-0.10.1/CODE_OF_CONDUCT.md
+    Positions : 0 - 1808
+    Aperçu : Context: vLLM Code of Conduct  # vLLM Code of Conduct  ## Our Pledge  We as members, contributors, and leaders pledge to make participation in our community a harassment-free experience for everyone, ...
+
+[2] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 25167 - 25995
+    Aperçu : def extract_previous_hidden_states(         data: Union[ExecuteModelRequest, Dict[str, torch.Tensor]]) -> \             Dict[str, torch.Tensor]:     """If data contains previous_hidden_states, extract...
+
+[3] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 23553 - 25164
+    Aperçu : vLLM config available during worker initialization             self.worker = worker_class(**kwargs)             assert self.worker is not None      def initialize_from_config(self, kv_cache_configs: L...
+
+[4] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 21753 - 23753
+    Aperçu : " as the serialization of class objects can be tricky and"                 " error-prone. To be safe, please keep the class in a separate"                 " module and pass the qualified name of the c...
+
+[5] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 19953 - 21953
+    Aperçu : t_cached_hf_modules()      def adjust_rank(self, rank_mapping: Dict[int, int]) -> None:         """         Adjust the rpc_rank based on the given mapping.         It is only used during the initializ...
+
+[6] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 18153 - 20153
+    Aperçu : class WorkerWrapperBase:     """     This class represents one process in an executor/engine. It is responsible     for lazily initializing the worker and handling the worker's lifecycle.     We first...
+
+[7] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 17927 - 18150
+    Aperçu : _input=model_input,             kv_caches=self.kv_cache[worker_input.virtual_engine]             if self.kv_cache is not None else None,             intermediate_tensors=intermediate_tensors,         ...
+
+[8] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 16127 - 18127
+    Aperçu : output.tensors["model_execute_time"] = torch.tensor(                     model_execute_time + orig_model_execute_time)             get_pp_group().send_tensor_dict(output.tensors,                      ...
+
+[9] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 14327 - 16327
+    Aperçu : ) -> Optional[List[SamplerOutput]]:         """Executes at least one model step on the given sequences, unless no         sequences are provided."""         start_time = time.perf_counter()          i...
+
+[10] Fichier : vllm-0.10.1/vllm/worker/worker_base.py
+    Positions : 12527 - 14527
+    Aperçu : s = extract_previous_hidden_states(execute_model_req)          if self.do_metadata_broadcast:             broadcast_data = worker_input.as_broadcastable_tensor_dict()             broadcast_data.update...

@@ -1,0 +1,3 @@
+BM25S Retrieve:   0%|          | 0/1 [00:00<?, ?it/s]                                                     Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:   1%|          | 2/311 [00:00<00:19, 15.84it/s]Loading weights:  97%|█████████▋| 301/311 [00:00<00:00, 1564.80it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 1350.73it/s]

@@ -1,0 +1,42 @@
+MOULINETTE ARGS: ['/home/avauclai/Desktop/RAG/src/__main__.py', 'search_dataset', '--dataset_path', '/home/avauclai/Desktop/RAG/exams/exams_pkg/data/datasets/private/UnansweredQuestions/dataset_code_private.json', '--k', '10', '--save_directory', '/home/avauclai/Desktop/RAG/exams/exams_pkg/evaluations/retrieval/2026-06-22_16-50-50/search_results']
+MOULINETTE ARGS: ['/home/avauclai/Desktop/RAG/src/__main__.py', 'search_dataset', '--dataset_path', '/home/avauclai/Desktop/RAG/exams/exams_pkg/data/datasets/private/UnansweredQuestions/dataset_code_private.json', '--k', '10', '--save_directory', '/home/avauclai/Desktop/RAG/exams/exams_pkg/evaluations/retrieval/2026-06-22_16-50-50/search_results']
+Recherche en cours:   0%|          | 0/100 [00:00<?, ?it/s]
+BM25S Retrieve:   0%|          | 0/1 [00:00<?, ?it/s][A
+                                                     [ARecherche en cours:   0%|          | 0/100 [00:00<?, ?it/s]
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/avauclai/Desktop/RAG/src/__main__.py", line 390, in <module>
+    fire.Fire(RAGCLI)
+    ~~~~~~~~~^^^^^^^^
+  File "/home/avauclai/Desktop/RAG/.venv/lib/python3.14/site-packages/fire/core.py", line 135, in Fire
+    component_trace = _Fire(component, args, parsed_flag_args, context, name)
+  File "/home/avauclai/Desktop/RAG/.venv/lib/python3.14/site-packages/fire/core.py", line 468, in _Fire
+    component, remaining_args = _CallAndUpdateTrace(
+                                ~~~~~~~~~~~~~~~~~~~^
+        component,
+        ^^^^^^^^^^
+    ...<2 lines>...
+        treatment='class' if is_class else 'routine',
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        target=component.__name__)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/avauclai/Desktop/RAG/.venv/lib/python3.14/site-packages/fire/core.py", line 684, in _CallAndUpdateTrace
+    component = fn(*varargs, **kwargs)
+  File "/home/avauclai/Desktop/RAG/src/__main__.py", line 245, in search_dataset
+    MinimalSearchResults(
+    ~~~~~~~~~~~~~~~~~~~~^
+        question_id=q.question_id,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+        question_str=q.question,
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+        retrieved_sources=chunks,  # type: ignore[arg-type]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/avauclai/Desktop/RAG/.venv/lib/python3.14/site-packages/pydantic/main.py", line 263, in __init__
+    validated_self = self.__pydantic_validator__.validate_python(data, self_instance=self)
+pydantic_core._pydantic_core.ValidationError: 1 validation error for MinimalSearchResults
+question
+  Field required [type=missing, input_value={'question_id': 'f2893710...oad_weights(weights)')]}, input_type=dict]
+    For further information visit https://errors.pydantic.dev/2.13/v/missing

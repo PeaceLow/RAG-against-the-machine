@@ -43,6 +43,7 @@ class LLMClient:
                 if self.device != "cpu"
                 else torch.float32,
                 trust_remote_code=True,
+                attn_implementation="sdpa"
             )
         except Exception as e:
             print(
@@ -64,9 +65,21 @@ class LLMClient:
                 if self.device != "cpu"
                 else torch.float32,
                 trust_remote_code=True,
+                attn_implementation="sdpa"
             )
 
         getattr(self.model, "eval")()
+
+        if sys.platform.startswith("linux") and self.device == "cpu":
+            try:
+                print("\033[90mCompilation du modèle en cours "
+                      "(le premier run sera plus long)...\033[0m")
+                self.model = torch.compile(
+                    self.model
+                    )  # type: ignore[assignment]
+            except Exception as e:
+                print(f"\033[93mInfo : torch.compile "
+                      f"non supporté sur cette version ({e})\033[0m")
 
     def generate_answer(
         self,
@@ -85,7 +98,6 @@ class LLMClient:
             ]
         )
 
-        # System prompt instructions to ensure faithfulness and autonomy
         messages = [
             {
                 "role": "system",
@@ -93,7 +105,8 @@ class LLMClient:
                     "You are a helpful coding assistant. You must answer the "
                     "user's question based ONLY on the provided context. "
                     "Cite your sources. If the answer is not in the context, "
-                    "say so."
+                    "say so. Be as clear and concise as possible in "
+                    "your answer, and get straight to the point."
                 ),
             },
             {
@@ -127,8 +140,7 @@ class LLMClient:
             generation_kwargs = dict(
                 **model_inputs,
                 max_new_tokens=max_new_tokens,
-                temperature=0.3,
-                do_sample=True,
+                do_sample=False,
                 pad_token_id=self.tokenizer.eos_token_id,
                 streamer=streamer,
             )
@@ -142,7 +154,6 @@ class LLMClient:
 
             response_text = ""
             for new_text in streamer:
-                # Colorize <think> blocks in gray if present
                 if "<think>" in new_text:
                     new_text = new_text.replace("<think>", "\033[90m<think>")
                 if "</think>" in new_text:
@@ -153,7 +164,6 @@ class LLMClient:
                 response_text += new_text
 
             thread.join()
-            # Reset color just in case
             sys.stdout.write("\033[0m")
             sys.stdout.flush()
 
@@ -172,14 +182,12 @@ class LLMClient:
                 generated_ids = self.model.generate(  # type: ignore[misc]
                     **model_inputs,
                     max_new_tokens=max_new_tokens,
-                    temperature=0.3,
-                    do_sample=True,
+                    do_sample=False,
                     pad_token_id=self.tokenizer.eos_token_id,
                 )
 
-            # Extract only the newly generated tokens
             new_generated_ids = [
-                output_ids[len(input_ids) :]
+                output_ids[len(input_ids):]
                 for input_ids, output_ids in zip(
                     model_inputs.input_ids, generated_ids
                 )

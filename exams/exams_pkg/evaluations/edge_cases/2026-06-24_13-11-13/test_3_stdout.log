@@ -1,0 +1,15 @@
+[96m[1mRecherche de contexte[0m pour : 'What is vLLM?'...
+[93m[1mChargement[0m du modèle Qwen/Qwen3-0.6B sur cpu...
+
+
+[96m[1m[ Résultats [0m: Tokens consommés : 61 (prompt) | 183 (réponse) ][0m
+
+==================================================
+[96m[1mRÉPONSE GÉNÉRÉE[0m
+==================================================
+<think>
+Okay, the user is asking about what vLLM is. Let me check the context provided. The context mentions vLLM in the context of a model, like "vLLM is a model for handling the training and inference of large language models." So I need to explain that vLLM is a framework or library used in large language model (LLM) development. I should mention that it's used for training and inference, and perhaps note that it's part of a larger ecosystem. Make sure to cite the context as the source. Let me put that together clearly.
+</think>
+
+vLLM is a framework designed for training and inference of large language models (LLMs). It provides tools and libraries to handle tasks like model training, fine-tuning, and deployment. The context highlights its role in enabling efficient LLM processing, making it a key component in modern AI applications.
+==================================================

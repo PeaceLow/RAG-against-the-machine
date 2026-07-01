@@ -1,0 +1,11 @@
+[96m[1mRecherche de contexte[0m pour : 'What API endpoint does vLLM support for chat completions?'...
+[93m[1mChargement[0m du modèle Qwen/Qwen3-0.6B sur cpu...
+[90mCompilation du modèle en cours (le premier run sera plus long)...[0m
+
+==================================================
+[96m[1mRÉPONSE GÉNÉRÉE[0m
+==================================================
+[90m<think>
+Okay, the user is asking about the API endpoint vLLM supports for chat completions. Let me look through the context provided.
+
+First, I see in Source 2 and Source 3 and Source 4 and Source 5. The context mentions that vLLM is compatible with OpenAI's API, allowing use as a drop-in replacement. For example, they 

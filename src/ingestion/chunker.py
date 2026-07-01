@@ -29,8 +29,6 @@ def chunk_python(
     try:
         tree = ast.parse(text)
     except Exception:
-        # En cas d'échec du parseur AST, utiliser une solution de repli
-        # (par ex: chunk texte par texte)
         return chunk_text(file_path, text, max_chunk_size)
 
     line_offsets = _get_line_offsets(text)
@@ -48,7 +46,6 @@ def chunk_python(
             return
 
         if len(chunk_text) > max_chunk_size:
-            # Fallback sur du text chunking simple si le noeud est gigantesque
             sub_chunks = chunk_text_by_size(
                 file_path, text, start_idx, end_idx, max_chunk_size
             )
@@ -64,7 +61,6 @@ def chunk_python(
             )
 
     for node in tree.body:
-        # Recuperer le start et end index si disponibles
         if (
             hasattr(node, "lineno")
             and hasattr(node, "col_offset")
@@ -72,8 +68,6 @@ def chunk_python(
             and hasattr(node, "end_col_offset")
         ):
             node_start = line_offsets[node.lineno - 1] + node.col_offset
-            # L'ast peut parfois donner un end_lineno plus loin que text len
-            # si c'est la fin du fichier
             try:
                 node_end = line_offsets[int(node.end_lineno or 0) - 1] + int(
                     node.end_col_offset or 0
@@ -81,8 +75,6 @@ def chunk_python(
             except IndexError:
                 node_end = len(text)
 
-            # Gérer la limite max_chunk_size en groupant les petits noeuds
-            # ou en les séparant
             node_length = node_end - node_start
 
             if current_chunk_text and (
@@ -102,15 +94,12 @@ def chunk_python(
                 current_end = node_end
                 current_chunk_text = text[current_start:current_end]
         else:
-            # Pour un noeud inattendu sans infos de lignes
             pass
 
-    # Ajouter le reliquat
     if current_chunk_text:
         add_chunk(current_start, current_end)
 
     if not chunks:
-        # S'il y a du texte non parsé/récupéré ou un code sans nodes reconnus
         chunks.extend(chunk_text(file_path, text, max_chunk_size))
 
     return chunks
@@ -161,7 +150,6 @@ def chunk_markdown(
     """
     chunks = []
 
-    # Trouver tous les séparateurs de paragraphes
     matches = list(re.finditer(r"\n{2,}", text))
 
     block_boundaries = []
@@ -213,37 +201,41 @@ def chunk_markdown(
     for start_idx, end_idx in block_boundaries:
         block_len = end_idx - start_idx
 
-        # Si un seul bloc depasse la taille max
-        if block_len > max_chunk_size:
+        s_h1, s_h2, s_h3 = block_states.get(current_start, ("", "", ""))
+        headers = [h for h in (s_h1, s_h2, s_h3) if h]
+        if headers:
+            prefix_len = len("Context: " + " > ".join(headers) + "\n\n")
+        else:
+            prefix_len = 0
+        current_chunk_real_size = prefix_len + (end_idx - current_start)
+
+        if (prefix_len + block_len) > max_chunk_size:
             if current_end > current_start:
                 chunks.append(_create_chunk(current_start, current_end))
-            # On découpe ce très long bloc de façon naîve
+
+            safe_max_size = max_chunk_size - prefix_len
             sub_chunks = chunk_text_by_size(
                 file_path,
                 text,
                 start_idx,
                 end_idx,
-                max_chunk_size,
-                overlap=1000,
+                safe_max_size,
+                overlap=300,
             )
-            s_h1, s_h2, s_h3 = block_states.get(start_idx, ("", "", ""))
-            headers = [h for h in (s_h1, s_h2, s_h3) if h]
             if headers:
                 prefix = "Context: " + " > ".join(headers) + "\n\n"
                 for sc in sub_chunks:
                     sc.text = prefix + sc.text
+
             chunks.extend(sub_chunks)
             current_start = end_idx
             current_end = end_idx
             blocks_in_chunk = []
             continue
 
-        # Si on depasse la limite en ajoutant le block courant
-        if (end_idx - current_start) > max_chunk_size:
+        if current_chunk_real_size > max_chunk_size:
             chunks.append(_create_chunk(current_start, current_end))
-            # Overlap: on recule jusqu'à trouver un bloc
-            # qui donne ~1000 char de chevauchement
-            target_start = current_end - 1000
+            target_start = current_end - 300
             for b_start, b_end in blocks_in_chunk:
                 if b_start >= target_start:
                     current_start = b_start
@@ -265,4 +257,13 @@ def chunk_markdown(
         if chunk_str:
             chunks.append(_create_chunk(current_start, current_end))
 
-    return chunks
+    final_chunks = []
+    for c in chunks:
+        chunk_len = c.last_character_index - c.first_character_index
+        if chunk_len > max_chunk_size:
+            c.last_character_index = c.first_character_index + max_chunk_size
+            c.text = c.text[:max_chunk_size]
+
+        final_chunks.append(c)
+
+    return final_chunks

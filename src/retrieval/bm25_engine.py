@@ -16,19 +16,36 @@ from src.retrieval.base import BaseRetriever
 def tokenize_code(texts: List[str]) -> List[List[str]]:
     """
     Tokenize code while keeping original words, splitting snake_case,
-    camelCase, and applying English stemming.
+    camelCase, applying English stemming, AND filtering stop words.
     """
     stemmer = Stemmer.Stemmer("english")
+
+    # Liste de mots vides classiques en anglais
+    STOP_WORDS = {
+        "a", "about", "an", "and", "are", "as", "at", "be", "by", "for",
+        "from", "how", "i", "in", "is", "it", "of", "on", "or", "that",
+        "the", "this", "to", "was", "what", "when", "where", "who",
+        "why", "will", "with", "can", "do", "does", "using", "use",
+        "we", "you", "vllm", "python", "code", "example", "file",
+        "error", "script", "please", "tell", "me", "show",
+    }
+
     tokens_list = []
     for text in texts:
-        base_tokens = re.split(r"\W+", text)
+        base_tokens = re.split(r"[^\w.-]+", text)
         extended_tokens = []
         for t in base_tokens:
             if not t:
                 continue
+
+            # Ne pas étendre les stop words
+            if t.lower() in STOP_WORDS:
+                continue
+
             extended_tokens.append(t)
             if "_" in t:
                 extended_tokens.extend(t.split("_"))
+
             # Split camelCase
             matches = re.finditer(
                 r".+?(?:(?<=[a-z])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])|$)", t
@@ -37,10 +54,17 @@ def tokenize_code(texts: List[str]) -> List[List[str]]:
             if len(camel_parts) > 1:
                 extended_tokens.extend(camel_parts)
 
-        # Stemming and lowercase
-        final_tokens = [
-            stemmer.stemWord(x.lower()) for x in extended_tokens if x
-        ]
+        # Stemming et lowercase, avec un dernier filtre de sécurité
+        final_tokens = []
+        for x in extended_tokens:
+            lower_x = x.lower()
+            if (
+                len(lower_x) > 1
+                and not lower_x.isdigit()
+                and lower_x not in STOP_WORDS
+            ):
+                final_tokens.append(stemmer.stemWord(lower_x))
+
         tokens_list.append(final_tokens)
     return tokens_list
 
@@ -58,12 +82,15 @@ class BM25Retriever(BaseRetriever):
     def index(self, chunks: List[Chunk]) -> None:
         """
         Index a list of chunks.
-
-        Args:
-            chunks (List[Chunk]): The text chunks to index.
         """
         self.chunks = chunks
-        corpus_texts = [chunk.text for chunk in chunks]
+
+        corpus_texts = []
+        for chunk in chunks:
+            filename = chunk.file_path.split('/')[-1]
+            boosted_metadata = f"{filename} " * 3
+            super_text = f"{boosted_metadata} {chunk.file_path} {chunk.text}"
+            corpus_texts.append(super_text)
 
         # Tokenize and index
         corpus_tokens = tokenize_code(corpus_texts)
@@ -83,8 +110,22 @@ class BM25Retriever(BaseRetriever):
         if not self.chunks:
             raise ValueError("The index is empty. Please run indexing first.")
 
+        synonyms = {
+            "error": "exception traceback",
+            "config": "configuration setting parameter",
+            "fake": "dummy mock test",
+            "args": "arguments parameters kwargs",
+            "init": "initialize setup __init__"
+        }
+
+        # On ajoute les synonymes à la volée si le mot est dans la requête
+        expanded_query = query.lower()
+        for word, syn in synonyms.items():
+            if word in expanded_query:
+                expanded_query += f" {syn}"
+
         # Custom tokenization for queries
-        query_tokens = tokenize_code([query])
+        query_tokens = tokenize_code([expanded_query])
 
         # Ensure we don't ask for more chunks than we have
         k_min = min(k, len(self.chunks))

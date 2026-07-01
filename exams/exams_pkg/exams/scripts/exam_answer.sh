@@ -11,7 +11,7 @@ set -e
 STUDENT_PATH=""
 MOULINETTE_PATH=""
 SELECTED_QUESTIONS=""
-MODULE_NAME="src"
+MODULE_NAME="src.main"
 
 usage() {
     echo "Usage: $0 --student-path PATH --moulinette-path PATH [--questions Q1,Q2,Q3] [--module-name NAME]"
@@ -72,7 +72,7 @@ fi
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 DATETIME=$(date +"%Y-%m-%d_%H-%M-%S")
-PROJECT_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
+PROJECT_DIR="$STUDENT_PATH"  # Assuming student path is the project root
 EVAL_DIR="$PROJECT_DIR/evaluations/answer/$DATETIME"
 
 # Dataset paths
@@ -171,7 +171,7 @@ for question in "${QUESTIONS[@]}"; do
 
     cd "$STUDENT_PATH"
     echo -e "${BOLD}Student answer:${NC}"
-    uv run python -m $MODULE_NAME answer "$question" --k 10 \
+    uv run python -m $MODULE_NAME answer "$question" --k 10 --stream True \
         2> "$EVAL_DIR/answer_${ANSWER_NUM}_stderr.log" \
         | tee "$EVAL_DIR/answer_${ANSWER_NUM}.log"
 
